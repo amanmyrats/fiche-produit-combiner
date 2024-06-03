@@ -13,20 +13,24 @@ def convert_to_file_folder_name(xstr):
     return xstr
 
 def is_sheet_fiche_produit(*args, **kwargs):
-    fp_at_least=["FICHE PRODUIT - КАРТОЧКА ИЗДЕЛИЯ", "Nom du produit", "Name of Product"]
+    fp_at_least=[
+        "FICHE PRODUIT - КАРТОЧКА ИЗДЕЛИЯ", 
+        "Nom du produit", 
+        "Name of Product", 
+        ]
     if kwargs['type']=='dataframe':
         found_match=0
         for index in range(kwargs['df'].shape[1]):
             for index, value in kwargs['df'].iloc[:, index].items():
                 for atleast in fp_at_least:
-                    if str(value).__contains__(atleast):
+                    if str(value).lower().__contains__(str(atleast).lower()):
                         found_match+=1
     elif kwargs['type']=='openpyxl':
         found_match=0
         for row in kwargs['sheet'].iter_rows():
             for cell in row:
                 for atleast in fp_at_least:
-                    if str(cell.value).__contains__(atleast):
+                    if str(cell.value).lower().__contains__(str(atleast).lower()):
                         found_match+=1
 
     if found_match<1:
