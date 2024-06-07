@@ -27,13 +27,18 @@ title_label_to_search={
     "Observations et avis de l'organisme de contrôle:":             ("regular", 12, '', '' , 25),
     "Замечания И Заключение Тех. Надзора:":                         ("regular", 12, '', '' , 25),
     "Affaire":  ("footer", 13, "проект", 3, 8),
+    "Project":  ("footer", 13, "проект", 3, 8),
     "Phase":    ("footer", 14, "зтап", 3, 8),
     "Lot":      ("footer", 15, "Pаздел", 2, 8),
     "Type":     ("footer", 16, "тип", 2, 8),
     "Zone":     ("footer", 17, "зона", 2, 8),
     "Niveau":   ("footer", 18, "зтаж", 2, 8),
+    "Level":   ("footer", 18, "зтаж", 2, 8),
     "Numéro":   ("footer", 19, "номеp", 5, 8),
-    "Indice":   ("footer", 20, "Индекс", 1, 8)
+    "Numero":   ("footer", 19, "номеp", 5, 8),
+    "Number":   ("footer", 19, "номеp", 5, 8),
+    "Indice":   ("footer", 20, "Индекс", 1, 8),
+    "Index":   ("footer", 20, "Индекс", 1, 8)
     }
 
 formal_title_list=[

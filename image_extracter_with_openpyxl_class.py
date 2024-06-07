@@ -42,6 +42,7 @@ class FP_Image_Extractor:
             pass
 
         try:
+            print(f'image keys: {self.images._images.keys()}')
             for i in range(10,125):
                 for j in self.letters:
                     self.xcell=j + str(i)

@@ -60,6 +60,8 @@ class FicheProduit_to_Excel:
                 print(type(self.temp_wb.sheet_names))
                 if excel_file.suffix=='.xlsx':
                     self.file_openpyxl=load_workbook(excel_file)
+                    # Here I assign to pywin32, because openpyxl does not work well with images
+                    self.xls_workbook=self.excel_app.Workbooks.Open(excel_file)
                 elif excel_file.suffix=='.xls':
                     print('excel_file: ', excel_file)
                     self.xls_workbook=self.excel_app.Workbooks.Open(excel_file)
@@ -130,7 +132,7 @@ class FicheProduit_to_Excel:
                             # Check if cell value is equal to column titles
                             for key in self.title_label_to_search:
 
-                                if self.xvalue.__contains__(key) and len(self.xvalue)<80:
+                                if self.xvalue.lower().__contains__(str(key).lower()) and len(self.xvalue)<80:
                                     self.column_no_in_result_dict=int(self.title_label_to_search[key][1])
                                     if self.title_label_to_search[key][0]=="regular":
                                         self.current_cell_value=self.df.iloc[k][self.column_no]
@@ -153,7 +155,7 @@ class FicheProduit_to_Excel:
                                     elif self.title_label_to_search[key][0]=="footer":     # if it is footer
                                         # Check the second value of footer
                                         self.concataneted_footer=""
-                                        if self.xvalue.__contains__(self.title_label_to_search[key][2]):
+                                        if self.xvalue.lower().__contains__(str(self.title_label_to_search[key][2]).lower()):
                                             self.max_length=self.title_label_to_search[key][3]
                                             try:
                                                 self.footer_search(k=k)
@@ -241,7 +243,9 @@ class FicheProduit_to_Excel:
         #print('Suffix: ', Path(kwargs['excel_file']).suffix)
         if Path(kwargs['excel_file']).suffix=='.xlsx':
             obj_extractor=FP_Image_Extractor(xpath=self.fp_folder, result_path=self.result_path)
-            obj_extractor.xlsx_image_extracter(workbook=self.file_openpyxl, sheetname=self.temp_wb.sheet_names[kwargs['i_loop']], image_name=self.image_name, fp_no=self.fp_no, excel_name=self.excel_name, df_for_excel=self.result_dict_for_excel)
+            # obj_extractor.xlsx_image_extracter(workbook=self.file_openpyxl, sheetname=self.temp_wb.sheet_names[kwargs['i_loop']], image_name=self.image_name, fp_no=self.fp_no, excel_name=self.excel_name, df_for_excel=self.result_dict_for_excel)
+            # Here as well, i will use pywin32 to get images, openpyxl is not good with images
+            obj_extractor.xls_image_extracter(workbook=self.xls_workbook, sheetname=self.xls_workbook.Worksheets(self.temp_wb.sheet_names[kwargs['i_loop']]), image_name=self.image_name, fp_no=self.fp_no, excel_name=self.excel_name, df_for_excel=self.result_dict_for_excel)
             obj_extractor=None
         elif Path(kwargs['excel_file']).suffix=='.xls' and not self.xls_workbook==None:
             obj_extractor=FP_Image_Extractor(xpath=self.fp_folder, result_path=self.result_path)
