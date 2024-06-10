@@ -67,7 +67,8 @@ class FicheProduit_to_Excel:
                     self.xls_workbook=self.excel_app.Workbooks.Open(excel_file)
                     print('xls_workbook: ', self.xls_workbook)
                     #os.system('pause')
-            except:
+            except Exception as e:
+                print("Exception during assign workbook: ", str(e))
                 continue
             
             # Loop through all sheets of current workbook, excel_file
@@ -179,6 +180,7 @@ class FicheProduit_to_Excel:
             # Close openpyxl excel file after done
             if excel_file.suffix=='.xlsx':
                 self.file_openpyxl.close()
+                self.xls_workbook.Close(False)
             elif excel_file.suffix=='.xls' and not self.xls_workbook==None:
                 self.xls_workbook.Close(False)
              # Set pywin32 excel app to none
@@ -188,6 +190,7 @@ class FicheProduit_to_Excel:
                 print('Error when trying to Quit win32com object')
             finally:
                 self.excel_app=None
+                self.excel_app=win32com.client.Dispatch('Excel.Application')
 
         print("Everything is finished, now I will assign result_df")
         print("Length of result_dicts are:")
@@ -245,11 +248,23 @@ class FicheProduit_to_Excel:
             obj_extractor=FP_Image_Extractor(xpath=self.fp_folder, result_path=self.result_path)
             # obj_extractor.xlsx_image_extracter(workbook=self.file_openpyxl, sheetname=self.temp_wb.sheet_names[kwargs['i_loop']], image_name=self.image_name, fp_no=self.fp_no, excel_name=self.excel_name, df_for_excel=self.result_dict_for_excel)
             # Here as well, i will use pywin32 to get images, openpyxl is not good with images
-            obj_extractor.xls_image_extracter(workbook=self.xls_workbook, sheetname=self.xls_workbook.Worksheets(self.temp_wb.sheet_names[kwargs['i_loop']]), image_name=self.image_name, fp_no=self.fp_no, excel_name=self.excel_name, df_for_excel=self.result_dict_for_excel)
+            obj_extractor.xls_image_extracter(
+                workbook=self.xls_workbook, 
+                sheetname=self.xls_workbook.Worksheets(self.temp_wb.sheet_names[kwargs['i_loop']]), 
+                image_name=self.image_name, 
+                fp_no=self.fp_no, 
+                excel_name=self.excel_name, 
+                df_for_excel=self.result_dict_for_excel)
             obj_extractor=None
         elif Path(kwargs['excel_file']).suffix=='.xls' and not self.xls_workbook==None:
             obj_extractor=FP_Image_Extractor(xpath=self.fp_folder, result_path=self.result_path)
-            obj_extractor.xls_image_extracter(workbook=self.xls_workbook, sheetname=self.xls_workbook.Worksheets(self.temp_wb.sheet_names[kwargs['i_loop']]), image_name=self.image_name, fp_no=self.fp_no, excel_name=self.excel_name, df_for_excel=self.result_dict_for_excel)
+            obj_extractor.xls_image_extracter(
+                workbook=self.xls_workbook, 
+                sheetname=self.xls_workbook.Worksheets(self.temp_wb.sheet_names[kwargs['i_loop']]), 
+                image_name=self.image_name, 
+                fp_no=self.fp_no, 
+                excel_name=self.excel_name, 
+                df_for_excel=self.result_dict_for_excel)
             obj_extractor=None
 
         # self.image_name=""

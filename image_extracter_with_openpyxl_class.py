@@ -76,8 +76,8 @@ class FP_Image_Extractor:
         self.xls_sheet=kwargs['sheetname']
 
         for n, shape in enumerate(self.xls_sheet.Shapes):
-            if shape.TopLeftCell.row>3:
-                try:
+            try:
+                if shape.TopLeftCell.row>3:
                     shape.Copy() # Copies from Excel to Windows clipboard
 
                     self.xls_image = ImageGrab.grabclipboard()
@@ -85,11 +85,12 @@ class FP_Image_Extractor:
                     self.xls_image_name_refined=str(general_functions.convert_to_file_folder_name(self.xls_image_name_raw))
                     # Save image, it is now pillow image
                     self.xls_image.save(self.result_path / self.images_folder / self.xls_image_name_refined,'png')
-                except:
                     print('I could not copy this image: ', self.xls_image_name, ' - from excel file: ', self.xls_excel_name)
 
                 # Update result dictionary with refined image name
                 kwargs['df_for_excel'][24][len(kwargs['df_for_excel'][24])-1]=self.xls_image_name_refined
+            except:
+                pass
 
 if __name__=="__main__":
     test=FP_Image_Extractor(xpath="D:\\bckup Aman\\coding\\fiche_produit\\cra_list_test", prd_name_row=2, prd_name_col=7)
