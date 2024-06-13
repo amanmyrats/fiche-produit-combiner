@@ -40,7 +40,8 @@ class FicheProduit_to_Excel:
         self.title_column_no_of_empty=25
 
         self.excel_app=win32com.client.Dispatch('Excel.Application')
-        
+
+
     def loop_trough_excels(self):
         self.counter=0
         for excel_file in self.fp_folder.rglob("*.xls*"):
@@ -59,7 +60,7 @@ class FicheProduit_to_Excel:
                 self.total_sheet=len(self.temp_wb.sheet_names)
                 print(type(self.temp_wb.sheet_names))
                 if excel_file.suffix=='.xlsx':
-                    self.file_openpyxl=load_workbook(excel_file)
+                    # self.file_openpyxl=load_workbook(excel_file)
                     # Here I assign to pywin32, because openpyxl does not work well with images
                     self.xls_workbook=self.excel_app.Workbooks.Open(excel_file)
                 elif excel_file.suffix=='.xls':
@@ -83,7 +84,11 @@ class FicheProduit_to_Excel:
                     continue
 
                 # Decide if the sheet is fiche produit or not
-                if not general_functions.is_sheet_fiche_produit(type='dataframe', df=self.df, excel_file=excel_file, sheet_name=self.temp_wb.sheet_names[i]):
+                if not general_functions.is_sheet_fiche_produit(
+                    type='dataframe', 
+                    df=self.df, 
+                    excel_file=excel_file, 
+                    sheet_name=self.temp_wb.sheet_names[i]):
                     print("This sheet --- {} is not a fiche produit sheet".format(self.temp_wb.sheet_names[i]))
 
                     # Here I want to track excel files which are skipped.
@@ -98,73 +103,74 @@ class FicheProduit_to_Excel:
                     self.make_all_same_size()
 
                     continue
-                else:
-                    # This is a fiche produit sheet, so increase counter by 1
-                    self.counter+=1
+                
+                print("This sheet --- {} is a fiche produit sheet".format(self.temp_wb.sheet_names[i]))
+                # This is a fiche produit sheet, so increase counter by 1
+                self.counter+=1
 
-                    # It is test here
-                    self.title_label_to_search=dict(static_info.title_label_to_search)
+                # It is test here
+                self.title_label_to_search=dict(static_info.title_label_to_search)
 
-                    # For each row in dataframe
-                    for k, rows in self.df.iterrows():
-                        # For each cell in row
-                        for j, cols in rows.iteritems():
-                            self.column_no=self.df.columns.get_loc(j)
-                            self.xvalue=str(cols)
-                            
-                            if str(self.xvalue)=="nan":
-                                continue
+                # For each row in dataframe
+                for k, rows in self.df.iterrows():
+                    # For each cell in row
+                    for j, cols in rows.iteritems():
+                        self.column_no=self.df.columns.get_loc(j)
+                        self.xvalue=str(cols)
+                        
+                        if str(self.xvalue)=="nan":
+                            continue
 
-                            if self.column_no>25:
-                                continue
+                        if self.column_no>25:
+                            continue
 
-                            # Remove keys those have been found already
-                            try:
-                                self.dict_copy=dict(self.title_label_to_search)
-                                for to_remove in self.list_of_colno_to_remove_from_labels:
-                                    for key, value in self.title_label_to_search.items():
-                                        if value[1]==to_remove:
-                                            self.dict_copy.pop(key)
-                                self.title_label_to_search=dict(self.dict_copy)
-                            except:
-                                pass
+                        # Remove keys those have been found already
+                        try:
+                            self.dict_copy=dict(self.title_label_to_search)
+                            for to_remove in self.list_of_colno_to_remove_from_labels:
+                                for key, value in self.title_label_to_search.items():
+                                    if value[1]==to_remove:
+                                        self.dict_copy.pop(key)
+                            self.title_label_to_search=dict(self.dict_copy)
+                        except:
+                            pass
 
-                            self.list_of_colno_to_remove_from_labels=[]
-                            # Check if cell value is equal to column titles
-                            for key in self.title_label_to_search:
+                        self.list_of_colno_to_remove_from_labels=[]
+                        # Check if cell value is equal to column titles
+                        for key in self.title_label_to_search:
 
-                                if self.xvalue.lower().__contains__(str(key).lower()) and len(self.xvalue)<80:
-                                    self.column_no_in_result_dict=int(self.title_label_to_search[key][1])
-                                    if self.title_label_to_search[key][0]=="regular":
-                                        self.current_cell_value=self.df.iloc[k][self.column_no]
-                                        
-                                        # Call regular search function and assign value
-                                        self.regular_search(k=k)
-                                        if self.desired_value_found:
-                                            self.list_of_colno_to_remove_from_labels.append(self.column_no_in_result_dict)
-                                            break
-                                        
-                                    elif self.title_label_to_search[key][0]=="not_regular": # if it is not regular, it is for description of product.
+                            if self.xvalue.lower().__contains__(str(key).lower()) and len(self.xvalue)<80:
+                                self.column_no_in_result_dict=int(self.title_label_to_search[key][1])
+                                if self.title_label_to_search[key][0]=="regular":
+                                    self.current_cell_value=self.df.iloc[k][self.column_no]
+                                    
+                                    # Call regular search function and assign value
+                                    self.regular_search(k=k)
+                                    if self.desired_value_found:
+                                        self.list_of_colno_to_remove_from_labels.append(self.column_no_in_result_dict)
+                                        break
+                                    
+                                elif self.title_label_to_search[key][0]=="not_regular": # if it is not regular, it is for description of product.
+                                    try:
+                                        self.not_regular_search(k=k)
+                                        # Keys to remove, because they were found already
+                                        self.list_of_colno_to_remove_from_labels.append(self.column_no_in_result_dict)
+                                    except:
+                                        print("Some error occured. When workig with techicanl description.")
+                                        pass
+
+                                elif self.title_label_to_search[key][0]=="footer":     # if it is footer
+                                    # Check the second value of footer
+                                    self.concataneted_footer=""
+                                    if self.xvalue.lower().__contains__(str(self.title_label_to_search[key][2]).lower()):
+                                        self.max_length=self.title_label_to_search[key][3]
                                         try:
-                                            self.not_regular_search(k=k)
+                                            self.footer_search(k=k)
                                             # Keys to remove, because they were found already
                                             self.list_of_colno_to_remove_from_labels.append(self.column_no_in_result_dict)
                                         except:
-                                            print("Some error occured. When workig with techicanl description.")
+                                            print("Some error occured. When working with footer.")
                                             pass
-
-                                    elif self.title_label_to_search[key][0]=="footer":     # if it is footer
-                                        # Check the second value of footer
-                                        self.concataneted_footer=""
-                                        if self.xvalue.lower().__contains__(str(self.title_label_to_search[key][2]).lower()):
-                                            self.max_length=self.title_label_to_search[key][3]
-                                            try:
-                                                self.footer_search(k=k)
-                                                # Keys to remove, because they were found already
-                                                self.list_of_colno_to_remove_from_labels.append(self.column_no_in_result_dict)
-                                            except:
-                                                print("Some error occured. When working with footer.")
-                                                pass
 
                 # Independent from loop, update folder name, excel file name and current sheet name for once here
                 self.result_dict_for_excel[self.title_column_no_of_folder].append(self.parent_folder)
@@ -176,13 +182,20 @@ class FicheProduit_to_Excel:
                 
                 # Extract images
                 self.extract_workbook_images(i_loop=i, excel_file=excel_file)
+                print(f"Image extraction of sheet: {self.temp_wb.sheet_names[i]} is done.")
                 
             # Close openpyxl excel file after done
-            if excel_file.suffix=='.xlsx':
-                self.file_openpyxl.close()
+            # if excel_file.suffix=='.xlsx':
+            #     # self.file_openpyxl.close()
+            #     self.xls_workbook.Close(False)
+            # elif excel_file.suffix=='.xls' and not self.xls_workbook==None:
+            #     self.xls_workbook.Close(False)
+            try:
+                print('Now will close workbook, self.xls_workbook.Close(False)')
                 self.xls_workbook.Close(False)
-            elif excel_file.suffix=='.xls' and not self.xls_workbook==None:
-                self.xls_workbook.Close(False)
+            except Exception as e:
+                print("Exception when trying to close workbook, self.xls_workbook.Close(False)")
+                print(str(e))
              # Set pywin32 excel app to none
             try:
                 self.excel_app.Quit
@@ -218,8 +231,6 @@ class FicheProduit_to_Excel:
         self.end_time=datetime.datetime.now()
         self.total_time_spent=self.end_time-self.start_time
         print("Total spent time is: ", self.total_time_spent)
-
-
 
 
     def make_all_same_size(self):
@@ -271,6 +282,7 @@ class FicheProduit_to_Excel:
         # self.fp_numero=""
         # self.fp_indice=""
         # self.fp_no=""
+
 
     def regular_search(self, **kwargs):
         self.desired_value_found=False
